@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Security Assessment — qa.studiodesigner.com</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: #FFFFFF;
+    color: #4A5568;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── Top rule ── */
+  .top-rule {
+    height: 4px;
+    background: #E8472A;
+  }
+
+  /* ── Header ── */
+  .header {
+    padding: 2rem 3rem 1.5rem;
+    border-bottom: 1px solid #E2E8F0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+  .header-left {}
+  .brand-name {
+    font-size: 1.6rem;
+    font-weight: 300;
+    color: #2D3748;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.15rem;
+  }
+  .brand-name strong {
+    font-weight: 700;
+  }
+  .brand-sub {
+    font-size: 0.78rem;
+    color: #A0AEC0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .header-right {
+    text-align: right;
+  }
+  .report-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #A0AEC0;
+    margin-bottom: 0.2rem;
+  }
+  .report-date {
+    font-size: 0.9rem;
+    color: #2D3748;
+    font-weight: 500;
+  }
+  .report-target {
+    font-size: 0.82rem;
+    color: #4A5568;
+    margin-top: 0.15rem;
+  }
+
+  /* ── Risk banner ── */
+  .risk-banner {
+    background: #F7FAFC;
+    border-bottom: 1px solid #E2E8F0;
+    padding: 1.25rem 3rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .overall-risk {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0.85rem;
+    border-radius: 3px;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .risk-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: #E2E8F0;
+    border-radius: 3px;
+    overflow: hidden;
+    min-width: 120px;
+  }
+  .sev-cards {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .sev-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 4px;
+    padding: 0.6rem 1rem;
+    text-align: center;
+    min-width: 70px;
+  }
+  .sev-num {
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .sev-name {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #718096;
+    margin-top: 2px;
+    font-weight: 600;
+  }
+
+  /* ── Main content ── */
+  .main {
+    padding: 2rem 3rem;
+    max-width: 1300px;
+  }
+
+  /* ── Sections ── */
+  .section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #E2E8F0;
+  }
+  .section:last-of-type { border-bottom: none; }
+  .section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .section-sub {
+    font-size: 0.82rem;
+    color: #A0AEC0;
+    margin-bottom: 1rem;
+  }
+  .summary-text {
+    font-size: 0.92rem;
+    color: #4A5568;
+    line-height: 1.7;
+    font-style: italic;
+    border-left: 3px solid #E8472A;
+    padding-left: 1rem;
+  }
+
+  /* ── Executive findings ── */
+  .exec-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid #E2E8F0;
+  }
+  .exec-row:last-child { border-bottom: none; }
+  .exec-badge {
+    flex-shrink: 0;
+    padding: 1px 8px;
+    border-radius: 3px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #fff;
+    margin-top: 3px;
+    white-space: nowrap;
+  }
+  .exec-text {
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: #4A5568;
+  }
+
+  /* ── Technical table ── */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  th {
+    background: #F7FAFC;
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    color: #718096;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    border-bottom: 2px solid #E2E8F0;
+    border-top: 1px solid #E2E8F0;
+    white-space: nowrap;
+  }
+  td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid #E2E8F0;
+    vertical-align: top;
+    color: #4A5568;
+  }
+  tr:nth-child(even) td { background: #F7FAFC; }
+  tr:hover td { background: #EDF2F7; }
+  .detail-row td {
+    background: #FAFAFA !important;
+    padding: 0.25rem 0.75rem 0.5rem;
+  }
+  .sev-pill {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 3px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .finding-title { font-weight: 500; color: #2D3748; }
+  .mono { font-family: monospace; font-size: 0.82rem; font-weight: 600; }
+  .dim { color: #718096; }
+  .small { font-size: 0.75rem; }
+  .url-cell { color: #3182CE; font-size: 0.75rem; word-break: break-all; }
+  .no-data { text-align: center; color: #A0AEC0; padding: 2rem; }
+  .rem {
+    font-size: 0.8rem; color: #2B6CB0; padding: 3px 0 2px;
+    border-left: 2px solid #E8472A; padding-left: 8px; margin-bottom: 3px;
+  }
+  .evi {
+    font-size: 0.76rem; color: #718096; font-family: monospace;
+    border-left: 2px solid #E2E8F0; padding-left: 8px;
+  }
+
+  /* ── Footer ── */
+  .footer-rule { height: 1px; background: #E8472A; margin: 0 3rem; }
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 3rem;
+    font-size: 0.75rem;
+    color: #A0AEC0;
+  }
+  .footer-brand {
+    font-size: 1rem;
+    font-weight: 300;
+    color: #CBD5E0;
+    letter-spacing: -0.01em;
+  }
+  .footer-brand strong { font-weight: 700; }
+
+  @media print {
+    .top-rule { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .risk-banner { print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top orange rule -->
+<div class="top-rule"></div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="brand-name">Studio <strong>Designer</strong></div>
+    <div class="brand-sub">Security Assessment Report</div>
+  </div>
+  <div class="header-right">
+    <div class="report-label">Date</div>
+    <div class="report-date">June 08, 2026</div>
+    <div class="report-label" style="margin-top:0.75rem">Target</div>
+    <div class="report-target">qa.studiodesigner.com</div>
+    <div class="report-label" style="margin-top:0.75rem">Total Findings</div>
+    <div class="report-date">34</div>
+  </div>
+</div>
+
+<!-- Risk banner -->
+<div class="risk-banner">
+  <span class="overall-risk"
+        style="color:#718096;border-color:#718096;
+               background:#71809611">
+    INFORMATIONAL
+  </span>
+  <div class="risk-bar-wrap">
+    <div style="display:flex;height:100%"><div style="width:100.0%;background:#718096;height:100%"></div></div>
+  </div>
+  <div class="sev-cards">
+        <div class="sev-card" style="border-top:3px solid #718096">
+          <div class="sev-num" style="color:#718096">34</div>
+          <div class="sev-name">Info</div>
+        </div></div>
+</div>
+
+<!-- Content -->
+<div class="main">
+
+  
+      <div class="section">
+        <div class="section-label" style="color:#E8472A">AI ASSESSMENT</div>
+        <p class="summary-text">The target qa.studiodesigner.com (resolved to 141.193.213.10, a Cloudflare-proxied host) was assessed using Nmap, HTTPX, Shodan, and CloudFlair enumeration tools. No critical or high severity findings were identified; all 34 findings were informational in nature, indicating the exposed attack surface is minimal and no immediately exploitable vulnerabilities were detected. As a highest-priority remediation, the team should review the informational findings for any origin IP disclosure or infrastructure metadata exposure identified via CloudFlair/Shodan that could be leveraged to bypass Cloudflare protections in future attacks.</p>
+      </div>
+  
+
+  <!-- Technical findings -->
+  <div class="section">
+    <div class="section-label" style="color:#E8472A">TECHNICAL FINDINGS</div>
+    <p class="section-sub">Full detail for security and engineering teams. Sorted by severity.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Severity</th>
+            <th>Finding</th>
+            <th>CVSS</th>
+            <th>Source</th>
+            <th>Host : Port</th>
+            <th>OWASP</th>
+            <th>URL</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Discovered services</td>
+          <td class="mono">—</td>
+          <td class="dim">nmap</td>
+          <td class="dim"></td>
+          <td class="dim small">A06-Vulnerable and Outdated Components</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>{&quot;address&quot;: &quot;141.193.213.10&quot;, &quot;ports&quot;: [{&quot;port&quot;: &quot;80&quot;, &quot;state&quot;: &quot;open&quot;, &quot;service&quot;: {&quot;name&quot;: &quot;http&quot;, </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 80/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:80</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 80 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 443/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:443</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 443 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2052/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2052</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2052 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2053/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2053</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2053 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2082/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2082</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2082 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2083/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2083</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2083 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2086/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2086</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2086 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2087/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2087</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2087 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2095/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2095</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2095 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2096/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2096</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2096 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 6443/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:6443</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 6443 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 8073/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:8073</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 8073 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 8080/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:8080</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 8080 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 8443/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:8443</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 8443 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 8880/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:8880</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 8880 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Potential origin IP discovered behind CDN</td>
+          <td class="mono">—</td>
+          <td class="dim">cloudflair</td>
+          <td class="dim">141.193.213.10</td>
+          <td class="dim small">A05-SecurityMisconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Non-Cloudflare IP 141.193.213.10 discovered for domain qa.studiodesigner.com via subdomain-dns (resolved from qa.studiodesigner.com). This IP may bypass WAF/CDN protections — target it directly with a</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Discovered services</td>
+          <td class="mono">—</td>
+          <td class="dim">nmap</td>
+          <td class="dim"></td>
+          <td class="dim small">A06-Vulnerable and Outdated Components</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>{&quot;address&quot;: &quot;141.193.213.10&quot;, &quot;ports&quot;: [{&quot;port&quot;: &quot;80&quot;, &quot;state&quot;: &quot;open&quot;, &quot;service&quot;: {&quot;name&quot;: &quot;http&quot;, </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Discovered services</td>
+          <td class="mono">—</td>
+          <td class="dim">nmap</td>
+          <td class="dim"></td>
+          <td class="dim small">A06-Vulnerable and Outdated Components</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>{&quot;address&quot;: &quot;141.193.213.10&quot;, &quot;ports&quot;: [{&quot;port&quot;: &quot;80&quot;, &quot;state&quot;: &quot;open&quot;, &quot;service&quot;: {&quot;name&quot;: &quot;http&quot;, </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 80/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:80</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 80 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 443/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:443</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 443 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2052/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2052</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2052 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2053/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2053</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2053 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2082/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2082</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2082 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2083/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2083</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2083 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2086/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2086</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2086 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2087/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2087</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2087 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2095/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2095</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2095 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 2096/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:2096</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 2096 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 6443/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:6443</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 6443 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 8073/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:8073</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 8073 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 8080/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:8080</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 8080 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 8443/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:8443</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 8443 is open</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="sev-pill" style="background:#F7FAFC;color:#718096;
+                  border:1px solid #71809633">Info</span>
+          </td>
+          <td class="finding-title">Open port 8880/tcp on 141.193.213.10</td>
+          <td class="mono">—</td>
+          <td class="dim">shodan</td>
+          <td class="dim">141.193.213.10:8880</td>
+          <td class="dim small">A05-Security-Misconfiguration</td>
+          <td class="dim small url-cell"></td>
+        </tr>
+        
+        <tr class="detail-row">
+          <td></td>
+          <td colspan="6">
+            
+            <div class=evi>Shodan InternetDB: port 8880 is open</div>
+          </td>
+        </tr></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer-rule"></div>
+<div class="footer">
+  <div>1551 S Robertson Blvd &nbsp;|&nbsp; Los Angeles, CA 90035</div>
+  <div class="footer-brand">studio <strong>|</strong> designer</div>
+</div>
+
+</body>
+</html>
