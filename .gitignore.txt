@@ -1,0 +1,9 @@
+# .gitignore
+pentest_bot.db
+runs/
+*.pyc
+__pycache__/
+.env
+*.log
+.pentest_session
+pentest_bot_t800/config/config.yaml
