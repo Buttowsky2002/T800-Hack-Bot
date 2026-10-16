@@ -1,0 +1,12 @@
+pentest_bot.db
+pentest_bot.db-shm
+pentest_bot.db-wal
+runs/
+*.pyc
+__pycache__/
+.env
+*.log
+.pentest_session
+.pentest_engagement
+.pentest_vault.yaml
+pentest_bot_t800/config/config.yaml
